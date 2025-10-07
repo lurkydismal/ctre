@@ -67,32 +67,28 @@ struct captured_content {
 
         using name = Name;
 
-        constexpr CTRE_FORCE_INLINE storage()  {}
+        constexpr CTRE_FORCE_INLINE storage() {}
 
-        constexpr CTRE_FORCE_INLINE void matched()  { _matched = true; }
-        constexpr CTRE_FORCE_INLINE void unmatch()  {
-            _matched = false;
-        }
-        constexpr CTRE_FORCE_INLINE void set_start( Iterator pos )  {
+        constexpr CTRE_FORCE_INLINE void matched() { _matched = true; }
+        constexpr CTRE_FORCE_INLINE void unmatch() { _matched = false; }
+        constexpr CTRE_FORCE_INLINE void set_start( Iterator pos ) {
             _begin = pos;
         }
-        constexpr CTRE_FORCE_INLINE storage& set_end( Iterator pos )  {
+        constexpr CTRE_FORCE_INLINE storage& set_end( Iterator pos ) {
             _end = pos;
             return *this;
         }
-        constexpr CTRE_FORCE_INLINE Iterator get_end() const  {
-            return _end;
-        }
+        constexpr CTRE_FORCE_INLINE Iterator get_end() const { return _end; }
 
-        constexpr auto begin() const  { return _begin; }
-        constexpr auto end() const  { return _end; }
+        constexpr auto begin() const { return _begin; }
+        constexpr auto end() const { return _end; }
 
-        constexpr explicit CTRE_FORCE_INLINE operator bool() const  {
+        constexpr explicit CTRE_FORCE_INLINE operator bool() const {
             return _matched;
         }
 
         template < typename It = Iterator >
-        constexpr CTRE_FORCE_INLINE const auto* data_unsafe() const  {
+        constexpr CTRE_FORCE_INLINE const auto* data_unsafe() const {
             static_assert( !is_reverse_iterator< It >,
                            "Iterator in your capture must not be reverse!" );
 
@@ -117,7 +113,7 @@ struct captured_content {
         }
 
         template < typename It = Iterator >
-        constexpr CTRE_FORCE_INLINE const auto* data() const  {
+        constexpr CTRE_FORCE_INLINE const auto* data() const {
             constexpr bool must_be_contiguous_nonreverse_iterator =
                 is_random_accessible<
                     typename std::iterator_traits< It >::iterator_category > &&
@@ -131,11 +127,11 @@ struct captured_content {
             return data_unsafe();
         }
 
-        constexpr CTRE_FORCE_INLINE auto size() const  {
+        constexpr CTRE_FORCE_INLINE auto size() const {
             return static_cast< size_t >( std::distance( begin(), end() ) );
         }
 
-        constexpr CTRE_FORCE_INLINE size_t unit_size() const  {
+        constexpr CTRE_FORCE_INLINE size_t unit_size() const {
 #if defined( __cpp_char8_t ) && __cpp_char8_t >= 201811
             if constexpr ( std::is_same_v< Iterator, utf8_iterator > ) {
                 return static_cast< size_t >(
@@ -150,8 +146,7 @@ struct captured_content {
 
 #if __has_include( <charconv>)
         template < typename R = int, typename... Ts >
-        constexpr CTRE_FORCE_INLINE auto to_number(
-            Ts&&... args ) const  -> R {
+        constexpr CTRE_FORCE_INLINE auto to_number( Ts&&... args ) const -> R {
             R result{ 0 };
             const auto view = to_view();
             std::from_chars( view.data(), view.data() + view.size(), result,
@@ -161,7 +156,7 @@ struct captured_content {
 
         template < typename R = int, typename... Ts >
         constexpr CTRE_FORCE_INLINE auto to_optional_number(
-            Ts&&... args ) const  -> std::optional< R > {
+            Ts&&... args ) const -> std::optional< R > {
             if ( !static_cast< bool >( *this ) ) {
                 return std::nullopt;
             }
@@ -171,7 +166,7 @@ struct captured_content {
 #endif
 
         template < typename It = Iterator >
-        constexpr CTRE_FORCE_INLINE auto to_view() const  {
+        constexpr CTRE_FORCE_INLINE auto to_view() const {
             // random access, because C++ (waving hands around)
             constexpr bool must_be_nonreverse_contiguous_iterator =
                 is_random_accessible< typename std::iterator_traits<
@@ -187,12 +182,10 @@ struct captured_content {
                 data_unsafe(), static_cast< size_t >( unit_size() ) );
         }
 
-        constexpr CTRE_FORCE_INLINE auto view() const  {
-            return to_view();
-        }
+        constexpr CTRE_FORCE_INLINE auto view() const { return to_view(); }
 
         template < typename It = Iterator >
-        constexpr CTRE_FORCE_INLINE auto to_optional_view() const 
+        constexpr CTRE_FORCE_INLINE auto to_optional_view() const
             -> std::optional< std::basic_string_view< char_type > > {
             if ( !static_cast< bool >( *this ) ) {
                 return std::nullopt;
@@ -201,7 +194,7 @@ struct captured_content {
         }
 
         constexpr CTRE_FORCE_INLINE std::basic_string< char_type > to_string()
-            const  {
+            const {
 #if defined( __cpp_char8_t ) && __cpp_char8_t >= 201811
             if constexpr ( std::is_same_v< Iterator, utf8_iterator > ) {
                 return std::basic_string< char_type >(
@@ -214,12 +207,10 @@ struct captured_content {
 #endif
         }
 
-        constexpr CTRE_FORCE_INLINE auto str() const  {
-            return to_string();
-        }
+        constexpr CTRE_FORCE_INLINE auto str() const { return to_string(); }
 
         template < typename It = Iterator >
-        constexpr CTRE_FORCE_INLINE auto to_optional_string() const 
+        constexpr CTRE_FORCE_INLINE auto to_optional_string() const
             -> std::optional< std::basic_string< char_type > > {
             if ( !static_cast< bool >( *this ) ) {
                 return std::nullopt;
@@ -228,47 +219,45 @@ struct captured_content {
         }
 
         constexpr CTRE_FORCE_INLINE
-        operator std::basic_string_view< char_type >() const  {
+        operator std::basic_string_view< char_type >() const {
             return to_view();
         }
 
         constexpr CTRE_FORCE_INLINE explicit
-        operator std::basic_string< char_type >() const  {
+        operator std::basic_string< char_type >() const {
             return to_string();
         }
 
-        constexpr CTRE_FORCE_INLINE operator std::optional<
-            std::basic_string_view< char_type > >() const  {
+        constexpr CTRE_FORCE_INLINE
+        operator std::optional< std::basic_string_view< char_type > >() const {
             return to_optional_view();
         }
 
-        constexpr CTRE_FORCE_INLINE explicit operator std::optional<
-            std::basic_string< char_type > >() const  {
+        constexpr CTRE_FORCE_INLINE explicit
+        operator std::optional< std::basic_string< char_type > >() const {
             return to_optional_string();
         }
 
-        constexpr CTRE_FORCE_INLINE static size_t get_id()  {
-            return Id;
-        }
+        constexpr CTRE_FORCE_INLINE static size_t get_id() { return Id; }
 
         friend CTRE_FORCE_INLINE constexpr bool operator==(
             const storage& lhs,
-            std::basic_string_view< char_type > rhs )  {
+            std::basic_string_view< char_type > rhs ) {
             return bool( lhs ) ? lhs.view() == rhs : false;
         }
         friend CTRE_FORCE_INLINE constexpr bool operator!=(
             const storage& lhs,
-            std::basic_string_view< char_type > rhs )  {
+            std::basic_string_view< char_type > rhs ) {
             return bool( lhs ) ? lhs.view() != rhs : false;
         }
         friend CTRE_FORCE_INLINE constexpr bool operator==(
             std::basic_string_view< char_type > lhs,
-            const storage& rhs )  {
+            const storage& rhs ) {
             return bool( rhs ) ? lhs == rhs.view() : false;
         }
         friend CTRE_FORCE_INLINE constexpr bool operator!=(
             std::basic_string_view< char_type > lhs,
-            const storage& rhs )  {
+            const storage& rhs ) {
             return bool( rhs ) ? lhs != rhs.view() : false;
         }
         friend CTRE_FORCE_INLINE std::ostream& operator<<(
@@ -307,9 +296,9 @@ struct captures;
 template < typename Head, typename... Tail >
 struct captures< Head, Tail... > : captures< Tail... > {
     Head head{};
-    constexpr CTRE_FORCE_INLINE captures()  {}
+    constexpr CTRE_FORCE_INLINE captures() {}
     template < size_t id >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
         if constexpr ( id == Head::get_id() ) {
             return true;
         } else {
@@ -317,7 +306,7 @@ struct captures< Head, Tail... > : captures< Tail... > {
         }
     }
     template < typename Name >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
         if constexpr ( std::is_same_v< Name, typename Head::name > ) {
             return true;
         } else {
@@ -326,10 +315,10 @@ struct captures< Head, Tail... > : captures< Tail... > {
     }
 #if CTRE_CNTTP_COMPILER_CHECK
     template < ctll::fixed_string Name >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
 #else
     template < const auto& Name >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
 #endif
         if constexpr ( std::is_same_v< typename Head::name, void > ) {
             return captures< Tail... >::template exists< Name >();
@@ -342,7 +331,7 @@ struct captures< Head, Tail... > : captures< Tail... > {
         }
     }
     template < size_t id >
-    CTRE_FORCE_INLINE constexpr auto& select()  {
+    CTRE_FORCE_INLINE constexpr auto& select() {
         if constexpr ( id == Head::get_id() ) {
             return head;
         } else {
@@ -350,7 +339,7 @@ struct captures< Head, Tail... > : captures< Tail... > {
         }
     }
     template < typename Name >
-    CTRE_FORCE_INLINE constexpr auto& select()  {
+    CTRE_FORCE_INLINE constexpr auto& select() {
         if constexpr ( std::is_same_v< Name, typename Head::name > ) {
             return head;
         } else {
@@ -358,7 +347,7 @@ struct captures< Head, Tail... > : captures< Tail... > {
         }
     }
     template < size_t id >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
         if constexpr ( id == Head::get_id() ) {
             return head;
         } else {
@@ -366,7 +355,7 @@ struct captures< Head, Tail... > : captures< Tail... > {
         }
     }
     template < typename Name >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
         if constexpr ( std::is_same_v< Name, typename Head::name > ) {
             return head;
         } else {
@@ -375,10 +364,10 @@ struct captures< Head, Tail... > : captures< Tail... > {
     }
 #if CTRE_CNTTP_COMPILER_CHECK
     template < ctll::fixed_string Name >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
 #else
     template < const auto& Name >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
 #endif
         if constexpr ( std::is_same_v< typename Head::name, void > ) {
             return captures< Tail... >::template select< Name >();
@@ -395,38 +384,38 @@ struct captures< Head, Tail... > : captures< Tail... > {
 
 template <>
 struct captures<> {
-    constexpr CTRE_FORCE_INLINE captures()  {}
+    constexpr CTRE_FORCE_INLINE captures() {}
     template < size_t >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
         return false;
     }
     template < typename >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
         return false;
     }
 #if CTRE_CNTTP_COMPILER_CHECK
     template < ctll::fixed_string >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
 #else
     template < const auto& >
-    CTRE_FORCE_INLINE static constexpr bool exists()  {
+    CTRE_FORCE_INLINE static constexpr bool exists() {
 #endif
         return false;
     }
     template < size_t >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
         return capture_not_exists;
     }
     template < typename >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
         return capture_not_exists;
     }
 #if CTRE_CNTTP_COMPILER_CHECK
     template < ctll::fixed_string >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
 #else
     template < const auto& >
-    CTRE_FORCE_INLINE constexpr auto& select() const  {
+    CTRE_FORCE_INLINE constexpr auto& select() const {
 #endif
         return capture_not_exists;
 }
@@ -442,16 +431,15 @@ class regex_results {
 public:
     using char_type = typename std::iterator_traits< Iterator >::value_type;
 
-    constexpr CTRE_FORCE_INLINE regex_results()  {}
-    constexpr CTRE_FORCE_INLINE regex_results( not_matched_tag_t )  {}
+    constexpr CTRE_FORCE_INLINE regex_results() {}
+    constexpr CTRE_FORCE_INLINE regex_results( not_matched_tag_t ) {}
 
     // special constructor for deducting
-    constexpr CTRE_FORCE_INLINE regex_results(
-        Iterator,
-        ctll::list< Captures... > )  {}
+    constexpr CTRE_FORCE_INLINE regex_results( Iterator,
+                                               ctll::list< Captures... > ) {}
 
     template < size_t Id >
-    CTRE_FORCE_INLINE constexpr auto get() const  {
+    CTRE_FORCE_INLINE constexpr auto get() const {
         constexpr bool capture_of_provided_id_must_exists =
             decltype( _captures )::template exists< Id >();
         static_assert( capture_of_provided_id_must_exists );
@@ -463,7 +451,7 @@ public:
         }
     }
     template < typename Name >
-    CTRE_FORCE_INLINE constexpr auto get() const  {
+    CTRE_FORCE_INLINE constexpr auto get() const {
         constexpr bool capture_of_provided_name_must_exists =
             decltype( _captures )::template exists< Name >();
         static_assert( capture_of_provided_name_must_exists );
@@ -476,10 +464,10 @@ public:
     }
 #if CTRE_CNTTP_COMPILER_CHECK
     template < ctll::fixed_string Name >
-    CTRE_FORCE_INLINE constexpr auto get() const  {
+    CTRE_FORCE_INLINE constexpr auto get() const {
 #else
     template < const auto& Name >
-    CTRE_FORCE_INLINE constexpr auto get() const  {
+    CTRE_FORCE_INLINE constexpr auto get() const {
 #endif
         constexpr bool capture_of_provided_name_must_exists =
             decltype( _captures )::template exists< Name >();
@@ -490,143 +478,139 @@ public:
     } else {
         return false;
     }
-} static constexpr size_t count()  {
+} static constexpr size_t count() {
     return sizeof...( Captures ) + 1;
 }
-constexpr CTRE_FORCE_INLINE regex_results& matched()  {
+constexpr CTRE_FORCE_INLINE regex_results& matched() {
     _captures.template select< 0 >().matched();
     return *this;
 }
-constexpr CTRE_FORCE_INLINE regex_results& unmatch()  {
+constexpr CTRE_FORCE_INLINE regex_results& unmatch() {
     _captures.template select< 0 >().unmatch();
     return *this;
 }
-constexpr CTRE_FORCE_INLINE operator bool() const  {
+constexpr CTRE_FORCE_INLINE operator bool() const {
     return bool( _captures.template select< 0 >() );
 }
 
 // implicit conversions
 constexpr CTRE_FORCE_INLINE operator std::basic_string_view< char_type >()
-    const  {
+    const {
     return to_view();
 }
 
 constexpr CTRE_FORCE_INLINE explicit operator std::basic_string< char_type >()
-    const  {
+    const {
     return to_string();
 }
 
 constexpr CTRE_FORCE_INLINE
-operator std::optional< std::basic_string_view< char_type > >() const  {
+operator std::optional< std::basic_string_view< char_type > >() const {
     return to_optional_view();
 }
 
 constexpr CTRE_FORCE_INLINE explicit
-operator std::optional< std::basic_string< char_type > >() const  {
+operator std::optional< std::basic_string< char_type > >() const {
     return to_optional_string();
 }
 
 // conversion to numbers
 #if __has_include( <charconv>)
 template < typename R = int, typename... Ts >
-constexpr CTRE_FORCE_INLINE auto to_number( Ts&&... args ) const  -> R {
+constexpr CTRE_FORCE_INLINE auto to_number( Ts&&... args ) const -> R {
     return _captures.template select< 0 >().template to_number< R >(
         std::forward< Ts >( args )... );
 }
 
 template < typename R = int, typename... Ts >
-constexpr CTRE_FORCE_INLINE auto to_optional_number(
-    Ts&&... args ) const  -> std::optional< R > {
+constexpr CTRE_FORCE_INLINE auto to_optional_number( Ts&&... args ) const
+    -> std::optional< R > {
     return _captures.template select< 0 >().template to_optional_number< R >(
         std::forward< Ts >( args )... );
 }
 #endif
 
 // conversion to basic_string_view
-constexpr CTRE_FORCE_INLINE auto to_view() const  {
+constexpr CTRE_FORCE_INLINE auto to_view() const {
     return _captures.template select< 0 >().to_view();
 }
 
-constexpr CTRE_FORCE_INLINE auto view() const  {
+constexpr CTRE_FORCE_INLINE auto view() const {
     return _captures.template select< 0 >()
         .view(); // this should be deprecated (??)
 }
 
-constexpr CTRE_FORCE_INLINE auto to_optional_view() const  {
+constexpr CTRE_FORCE_INLINE auto to_optional_view() const {
     return _captures.template select< 0 >().to_optional_view();
 }
 
 // conversion to basic_string
-constexpr CTRE_FORCE_INLINE auto to_string() const  {
+constexpr CTRE_FORCE_INLINE auto to_string() const {
     return _captures.template select< 0 >().to_string();
 }
 
-constexpr CTRE_FORCE_INLINE auto str() const  {
+constexpr CTRE_FORCE_INLINE auto str() const {
     return _captures.template select< 0 >()
         .to_string(); // this should be deprecated (??)
 }
 
-constexpr CTRE_FORCE_INLINE auto to_optional_string() const  {
+constexpr CTRE_FORCE_INLINE auto to_optional_string() const {
     return _captures.template select< 0 >().to_optional_string();
 }
 
-constexpr CTRE_FORCE_INLINE size_t size() const  {
+constexpr CTRE_FORCE_INLINE size_t size() const {
     return _captures.template select< 0 >().size();
 }
 
-constexpr CTRE_FORCE_INLINE const auto* data() const  {
+constexpr CTRE_FORCE_INLINE const auto* data() const {
     return _captures.template select< 0 >().data();
 }
 
-constexpr CTRE_FORCE_INLINE regex_results& set_start_mark(
-    Iterator pos )  {
+constexpr CTRE_FORCE_INLINE regex_results& set_start_mark( Iterator pos ) {
     _captures.template select< 0 >().set_start( pos );
     return *this;
 }
-constexpr CTRE_FORCE_INLINE regex_results& set_end_mark(
-    Iterator pos )  {
+constexpr CTRE_FORCE_INLINE regex_results& set_end_mark( Iterator pos ) {
     _captures.template select< 0 >().set_end( pos );
     return *this;
 }
-constexpr CTRE_FORCE_INLINE Iterator get_end_position() const  {
+constexpr CTRE_FORCE_INLINE Iterator get_end_position() const {
     return _captures.template select< 0 >().get_end();
 }
 template < size_t Id >
-CTRE_FORCE_INLINE constexpr regex_results& start_capture(
-    Iterator pos )  {
+CTRE_FORCE_INLINE constexpr regex_results& start_capture( Iterator pos ) {
     _captures.template select< Id >().set_start( pos );
     return *this;
 }
 template < size_t Id >
-CTRE_FORCE_INLINE constexpr regex_results& end_capture(
-    Iterator pos )  {
+CTRE_FORCE_INLINE constexpr regex_results& end_capture( Iterator pos ) {
     _captures.template select< Id >().set_end( pos ).matched();
     return *this;
 }
-constexpr auto begin() const  {
+constexpr auto begin() const {
     return _captures.template select< 0 >().begin();
 }
-constexpr auto end() const  {
+constexpr auto end() const {
     return _captures.template select< 0 >().end();
 }
 friend CTRE_FORCE_INLINE constexpr bool operator==(
     const regex_results& lhs,
-    std::basic_string_view< char_type > rhs )  {
+    std::basic_string_view< char_type > rhs ) {
     return bool( lhs ) ? lhs.view() == rhs : false;
 }
 friend CTRE_FORCE_INLINE constexpr bool operator!=(
     const regex_results& lhs,
-    std::basic_string_view< char_type > rhs )  {
+    std::basic_string_view< char_type > rhs ) {
     return bool( lhs ) ? lhs.view() != rhs : true;
 }
 friend CTRE_FORCE_INLINE constexpr bool operator==(
     std::basic_string_view< char_type > lhs,
-    const regex_results& rhs )  {
+    const regex_results& rhs ) {
     return bool( rhs ) ? lhs == rhs.view() : false;
 }
 friend CTRE_FORCE_INLINE constexpr bool operator!=(
     std::basic_string_view< char_type > lhs,
-    const regex_results& rhs )  {
+    const regex_results& rhs ) {
     return bool( rhs ) ? lhs != rhs.view() : true;
 }
 friend CTRE_FORCE_INLINE std::ostream& operator<<( std::ostream& str,
@@ -643,8 +627,7 @@ friend CTRE_FORCE_INLINE std::ostream& operator<<( std::ostream& str,
 ;
 
 template < size_t Id, typename Iterator, typename... Captures >
-constexpr auto get(
-    const regex_results< Iterator, Captures... >& results )  {
+constexpr auto get( const regex_results< Iterator, Captures... >& results ) {
     return results.template get< Id >();
 }
 

@@ -18,7 +18,7 @@ struct length_value_t {
 };
 
 constexpr length_value_t length_and_value_of_utf8_code_point(
-    uint8_t first_unit )  {
+    uint8_t first_unit ) {
     if ( ( first_unit & 0b1000'0000 ) == 0b0000'0000 )
         return { static_cast< uint32_t >( first_unit ), 1 };
     else if ( ( first_unit & 0b1110'0000 ) == 0b1100'0000 )
@@ -36,7 +36,7 @@ constexpr length_value_t length_and_value_of_utf8_code_point(
 }
 
 constexpr char32_t value_of_trailing_utf8_code_point( uint8_t unit,
-                                                      bool& correct )  {
+                                                      bool& correct ) {
     if ( ( unit & 0b1100'0000 ) == 0b1000'0000 )
         return unit & 0b0011'1111;
     else {
@@ -46,7 +46,7 @@ constexpr char32_t value_of_trailing_utf8_code_point( uint8_t unit,
 }
 
 constexpr length_value_t length_and_value_of_utf16_code_point(
-    uint16_t first_unit )  {
+    uint16_t first_unit ) {
     if ( ( first_unit & 0b1111110000000000 ) == 0b1101'1000'0000'0000 )
         return { static_cast< uint32_t >( first_unit & 0b0000001111111111 ),
                  2 };
@@ -65,8 +65,7 @@ struct fixed_string {
     bool correct_flag{ true };
 
     template < typename T >
-    constexpr fixed_string( construct_from_pointer_t,
-                            const T* input )  {
+    constexpr fixed_string( construct_from_pointer_t, const T* input ) {
         if constexpr ( std::is_same_v< T, char > ) {
 #ifdef CTRE_STRING_IS_UTF8
             size_t out{ 0 };
@@ -201,28 +200,26 @@ struct fixed_string {
     }
 
     template < typename T >
-    constexpr fixed_string( const std::array< T, N >& in ) 
+    constexpr fixed_string( const std::array< T, N >& in )
         : fixed_string{ construct_from_pointer, in.data() } {}
     template < typename T >
-    constexpr fixed_string( const T ( &input )[ N + 1 ] ) 
+    constexpr fixed_string( const T ( &input )[ N + 1 ] )
         : fixed_string{ construct_from_pointer, input } {}
 
-    constexpr fixed_string( const fixed_string& other )  {
+    constexpr fixed_string( const fixed_string& other ) {
         for ( size_t i{ 0 }; i < N; ++i ) {
             content[ i ] = other.content[ i ];
         }
         real_size = other.real_size;
         correct_flag = other.correct_flag;
     }
-    constexpr bool correct() const  { return correct_flag; }
-    constexpr size_t size() const  { return real_size; }
-    constexpr const char32_t* begin() const  { return content; }
-    constexpr const char32_t* end() const  { return content + size(); }
-    constexpr char32_t operator[]( size_t i ) const  {
-        return content[ i ];
-    }
+    constexpr bool correct() const { return correct_flag; }
+    constexpr size_t size() const { return real_size; }
+    constexpr const char32_t* begin() const { return content; }
+    constexpr const char32_t* end() const { return content + size(); }
+    constexpr char32_t operator[]( size_t i ) const { return content[ i ]; }
     template < size_t M >
-    constexpr bool is_same_as( const fixed_string< M >& rhs ) const  {
+    constexpr bool is_same_as( const fixed_string< M >& rhs ) const {
         if ( real_size != rhs.size() )
             return false;
         for ( size_t i{ 0 }; i != real_size; ++i ) {
@@ -231,7 +228,7 @@ struct fixed_string {
         }
         return true;
     }
-    constexpr operator std::basic_string_view< char32_t >() const  {
+    constexpr operator std::basic_string_view< char32_t >() const {
         return std::basic_string_view< char32_t >{ content, size() };
     }
 };
@@ -242,15 +239,15 @@ class fixed_string< 0 > {
 
 public:
     template < typename T >
-    constexpr fixed_string( const T* )  {}
-    constexpr fixed_string( std::initializer_list< char32_t > )  {}
-    constexpr fixed_string( const fixed_string& )  {}
-    constexpr bool correct() const  { return true; }
-    constexpr size_t size() const  { return 0; }
-    constexpr const char32_t* begin() const  { return empty; }
-    constexpr const char32_t* end() const  { return empty + size(); }
-    constexpr char32_t operator[]( size_t ) const  { return 0; }
-    constexpr operator std::basic_string_view< char32_t >() const  {
+    constexpr fixed_string( const T* ) {}
+    constexpr fixed_string( std::initializer_list< char32_t > ) {}
+    constexpr fixed_string( const fixed_string& ) {}
+    constexpr bool correct() const { return true; }
+    constexpr size_t size() const { return 0; }
+    constexpr const char32_t* begin() const { return empty; }
+    constexpr const char32_t* end() const { return empty + size(); }
+    constexpr char32_t operator[]( size_t ) const { return 0; }
+    constexpr operator std::basic_string_view< char32_t >() const {
         return std::basic_string_view< char32_t >{ empty, 0 };
     }
 };

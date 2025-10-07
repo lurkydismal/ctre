@@ -26,8 +26,7 @@ auto convert_to_basic_list( ctll::list< Content... > )
 template < auto V >
 struct rotate_value {
     template < auto... Vs >
-    friend constexpr auto operator+( string< Vs... >,
-                                     rotate_value< V > ) 
+    friend constexpr auto operator+( string< Vs... >, rotate_value< V > )
         -> string< V, Vs... > {
         return {};
     }
