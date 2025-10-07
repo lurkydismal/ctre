@@ -1,6 +1,4 @@
-*.o
 *.d
-**/*.tmp
 test
 result
 tests/benchmark-exec/*
@@ -20,3 +18,25 @@ tests/benchmark-range/*
 build
 cmake-build-*/*
 .idea/*
+
+# Vim
+**/*~
+**/*.swp
+**/.*~
+**/.*.swp
+
+# Profiling
+**/*.gc*
+**/*.info
+**/coverage*
+**/*.prof*
+
+# Binary
+**/*.o
+**/*.tmp
+**/*.a
+**/*.so
+**/*vgcore*
+**/*.data
+**/compile_commands*.json
+**/.cache
