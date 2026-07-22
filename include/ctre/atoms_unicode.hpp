@@ -33,13 +33,10 @@ using make_property =
     property< std::remove_const_t< decltype( Type ) >, Type, Value >;
 
 // unicode TS#18 level 1.2 general_category
-template < uni::detail::binary_prop Property >
-struct binary_property< uni::detail::binary_prop, Property > {
-    template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) {
-        return uni::detail::get_binary_prop< Property >(
-            static_cast< char32_t >( c ) );
-    }
+template <uni::detail::binary_prop Property> struct binary_property<uni::detail::binary_prop, Property> {
+	template <typename CharT> inline static constexpr bool match_char(CharT c, const flags &) noexcept {
+		return uni::detail::get_binary_prop<Property>(static_cast<char32_t>(static_cast<std::make_unsigned_t<CharT>>(c)));
+	}
 };
 
 // unicode TS#18 level 1.2.2

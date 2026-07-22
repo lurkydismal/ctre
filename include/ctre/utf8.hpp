@@ -12,108 +12,98 @@
 #define CTRE_ENABLE_UTF8_RANGE
 #endif
 
+#if defined(__cpp_impl_three_way_comparison) && (__cpp_impl_three_way_comparison >= 201907L)
+#define CTRE_NO_NEED_FOR_ADDITIONAL_COMPARISONS
+#endif
+
 namespace ctre {
 
 struct utf8_iterator {
-    using self_type = utf8_iterator;
-    using value_type = char8_t;
-    using reference = char8_t;
-    using pointer = const char8_t*;
-    using iterator_category = std::bidirectional_iterator_tag;
-    using difference_type = int;
+	using self_type = utf8_iterator;
+	using value_type = char8_t;
+	using reference = char8_t;
+	using pointer = const char8_t *;
+	using iterator_category = std::bidirectional_iterator_tag;
+	using difference_type = int;
+	
+	struct sentinel {
+		// this is here only because I want to support std::make_reverse_iterator
+		using self_type = sentinel;
+		using value_type = char8_t;
+		using reference = char8_t &;
+		using pointer = const char8_t *;
+		using iterator_category = std::bidirectional_iterator_tag;
+		using difference_type = int;
+		
+		// it's just sentinel it won't be ever called
+		auto operator++() noexcept -> self_type &;
+		auto operator++(int) noexcept -> self_type;
+		auto operator--() noexcept -> self_type &;
+		auto operator--(int) noexcept -> self_type;
+		friend auto operator==(self_type, self_type) noexcept -> bool;
+		auto operator*() noexcept -> reference;
+		
+		friend constexpr auto operator==(self_type, const char8_t * other_ptr) noexcept {
+			return *other_ptr == char8_t{0};
+		}
+#ifndef CTRE_NO_NEED_FOR_ADDITIONAL_COMPARISONS		
+		friend constexpr auto operator!=(self_type, const char8_t * other_ptr) noexcept {
+			return *other_ptr != char8_t{0};
+		}
+		
+		friend constexpr auto operator==(const char8_t * other_ptr, self_type) noexcept {
+			return *other_ptr == char8_t{0};
+		}
 
-    struct sentinel {
-        // this is here only because I want to support
-        // std::make_reverse_iterator
-        using self_type = sentinel;
-        using value_type = char8_t;
-        using reference = char8_t&;
-        using pointer = const char8_t*;
-        using iterator_category = std::bidirectional_iterator_tag;
-        using difference_type = int;
-
-        // it's just sentinel it won't be ever called
-        auto operator++() -> self_type&;
-        auto operator++( int ) -> self_type;
-        auto operator--() -> self_type&;
-        auto operator--( int ) -> self_type;
-        friend auto operator==( self_type, self_type ) -> bool;
-        auto operator*() -> reference;
-
-        friend constexpr auto operator==( self_type,
-                                          const char8_t* other_ptr ) {
-            return *other_ptr == char8_t{ 0 };
-        }
-#if !defined( __cpp_impl_three_way_comparison ) || \
-    __cpp_impl_three_way_comparison < 201907L
-        friend constexpr auto operator!=( self_type,
-                                          const char8_t* other_ptr ) {
-            return *other_ptr != char8_t{ 0 };
-        }
-
-        friend constexpr auto operator==( const char8_t* other_ptr,
-                                          self_type ) {
-            return *other_ptr == char8_t{ 0 };
-        }
-
-        friend constexpr auto operator!=( const char8_t* other_ptr,
-                                          self_type ) {
-            return *other_ptr != char8_t{ 0 };
-        }
+		friend constexpr auto operator!=(const char8_t * other_ptr, self_type) noexcept {
+			return *other_ptr != char8_t{0};
+		}
 #endif
-    };
-
-    const char8_t* ptr{ nullptr };
-    const char8_t* end{ nullptr };
-#if !defined( __cpp_impl_three_way_comparison ) || \
-    __cpp_impl_three_way_comparison < 201907L
-    constexpr friend bool operator!=( const utf8_iterator& lhs, sentinel ) {
-        return lhs.ptr < lhs.end;
-    }
-
-    constexpr friend bool operator!=( const utf8_iterator& lhs,
-                                      const char8_t* rhs ) {
-        return lhs.ptr != rhs;
-    }
-
-    constexpr friend bool operator!=( const utf8_iterator& lhs,
-                                      const utf8_iterator& rhs ) {
-        return lhs.ptr != rhs.ptr;
-    }
-#endif
-    constexpr friend bool operator==( const utf8_iterator& lhs, sentinel ) {
-        return lhs.ptr >= lhs.end;
-    }
-
-    constexpr friend bool operator==( const utf8_iterator& lhs,
-                                      const char8_t* rhs ) {
-        return lhs.ptr == rhs;
-    }
-
-    constexpr friend bool operator==( const utf8_iterator& lhs,
-                                      const utf8_iterator& rhs ) {
-        return lhs.ptr == rhs.ptr;
-    }
-
-#if !defined( __cpp_impl_three_way_comparison ) || \
-    __cpp_impl_three_way_comparison < 201907L
-    constexpr friend bool operator!=( sentinel, const utf8_iterator& rhs ) {
-        return rhs.ptr < rhs.end;
-    }
-
-    constexpr friend bool operator!=( const char8_t* lhs,
-                                      const utf8_iterator& rhs ) {
-        return lhs == rhs.ptr;
-    }
-
-    constexpr friend bool operator==( sentinel, const utf8_iterator& rhs ) {
-        return rhs.ptr >= rhs.end;
-    }
-
-    constexpr friend bool operator==( const char8_t* lhs,
-                                      const utf8_iterator& rhs ) {
-        return lhs == rhs.ptr;
-    }
+	};
+	
+	const char8_t * ptr{nullptr};
+	const char8_t * end{nullptr};
+#ifndef CTRE_NO_NEED_FOR_ADDITIONAL_COMPARISONS
+	constexpr friend bool operator!=(const utf8_iterator & lhs, sentinel) {
+		return lhs.ptr < lhs.end;
+	}
+	
+	constexpr friend bool operator!=(const utf8_iterator & lhs, const char8_t * rhs) {
+		return lhs.ptr != rhs;
+	}
+	
+	constexpr friend bool operator!=(const utf8_iterator & lhs, const utf8_iterator & rhs) {
+		return lhs.ptr != rhs.ptr;
+	}
+#endif	
+	constexpr friend bool operator==(const utf8_iterator & lhs, sentinel) {
+		return lhs.ptr >= lhs.end;
+	}
+	
+	constexpr friend bool operator==(const utf8_iterator & lhs, const char8_t * rhs) {
+		return lhs.ptr == rhs;
+	}
+	
+	constexpr friend bool operator==(const utf8_iterator & lhs, const utf8_iterator & rhs) {
+		return lhs.ptr == rhs.ptr;
+	}
+	
+#ifndef CTRE_NO_NEED_FOR_ADDITIONAL_COMPARISONS
+	constexpr friend bool operator!=(sentinel, const utf8_iterator & rhs) {
+		return rhs.ptr < rhs.end;
+	}
+	
+	constexpr friend bool operator!=(const char8_t * lhs, const utf8_iterator & rhs) {
+		return lhs == rhs.ptr;
+	}
+	
+	constexpr friend bool operator==(sentinel, const utf8_iterator & rhs) {
+		return rhs.ptr >= rhs.end;
+	}
+	
+	constexpr friend bool operator==(const char8_t * lhs, const utf8_iterator & rhs) {
+		return lhs == rhs.ptr;
+	}
 #endif
 
     constexpr utf8_iterator& operator=( const char8_t* rhs ) {

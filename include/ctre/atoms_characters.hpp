@@ -43,20 +43,17 @@ constexpr CTRE_FORCE_INLINE bool is_ascii_alpha_uppercase( T v ) {
     return ( v >= static_cast< T >( 'A' ) ) && v <= ( static_cast< T >( 'Z' ) );
 }
 
-template < auto V >
-struct character {
-    template < typename CharT >
-    CTRE_FORCE_INLINE static constexpr bool match_char( CharT value,
-                                                        const flags& f ) {
-        if constexpr ( is_ascii_alpha( V ) ) {
-            if ( is_case_insensitive( f ) ) {
-                if ( value == ( V ^ static_cast< decltype( V ) >( 0x20 ) ) ) {
-                    return true; //
-                }
-            }
-        }
-        return value == V;
-    }
+template <auto V> struct character {
+	template <typename CharT> CTRE_FORCE_INLINE static constexpr bool match_char(CharT value, const flags & f) noexcept {
+		if constexpr (is_ascii_alpha(V)) {
+			if (is_case_insensitive(f)) {
+				if (value == (V ^ static_cast<decltype(V)>(0x20))) {
+					return true;//
+				}
+			}	
+		}
+		return static_cast<std::make_unsigned_t<CharT>>(value) == V;
+	}
 };
 
 template < typename... Content >
@@ -92,30 +89,23 @@ struct negate {
     }
 };
 
-template < auto A, auto B >
-struct char_range {
-    template < typename CharT >
-    CTRE_FORCE_INLINE static constexpr bool match_char( CharT value,
-                                                        const flags& f ) {
-        if constexpr ( is_ascii_alpha_lowercase( A ) &&
-                       is_ascii_alpha_lowercase( B ) ) {
-            if ( is_case_insensitive( f ) ) {
-                if ( value >= ( A ^ static_cast< decltype( A ) >( 0x20 ) ) &&
-                     value <= ( B ^ static_cast< decltype( B ) >( 0x20 ) ) ) {
-                    return true; //
-                }
-            }
-        } else if constexpr ( is_ascii_alpha_uppercase( A ) &&
-                              is_ascii_alpha_uppercase( B ) ) {
-            if ( is_case_insensitive( f ) ) {
-                if ( value >= ( A ^ static_cast< decltype( A ) >( 0x20 ) ) &&
-                     value <= ( B ^ static_cast< decltype( B ) >( 0x20 ) ) ) {
-                    return true; //
-                }
-            }
-        }
-        return ( value >= A ) && ( value <= B );
-    }
+template <auto A, auto B> struct char_range {
+	template <typename CharT> CTRE_FORCE_INLINE static constexpr bool match_char(CharT value, const flags & f) noexcept {
+		if constexpr (is_ascii_alpha_lowercase(A) && is_ascii_alpha_lowercase(B)) {
+			if (is_case_insensitive(f)) {
+				if (value >= (A ^ static_cast<decltype(A)>(0x20)) && value <= (B ^ static_cast<decltype(B)>(0x20))) {
+					return true;//
+				}
+			}	
+		} else if constexpr (is_ascii_alpha_uppercase(A) && is_ascii_alpha_uppercase(B)) {
+			if (is_case_insensitive(f)) {
+				if (value >= (A ^ static_cast<decltype(A)>(0x20)) && value <= (B ^ static_cast<decltype(B)>(0x20))) {
+					return true;//
+				}
+			}	
+		}
+		return (static_cast<std::make_unsigned_t<CharT>>(value) >= A) && (static_cast<std::make_unsigned_t<CharT>>(value) <= B);
+	}
 };
 using word_chars = set< char_range< 'A', 'Z' >,
                         char_range< 'a', 'z' >,
